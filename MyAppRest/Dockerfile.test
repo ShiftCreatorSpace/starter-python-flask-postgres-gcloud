@@ -1,0 +1,23 @@
+FROM python:3.7.3
+
+# Create app directory
+WORKDIR /app
+
+# Install app dependencies
+COPY requirements.txt ./
+
+RUN pip install -r requirements.txt
+
+# Bundle app source
+COPY common /app/common
+COPY MyAppRest /app/MyAppRest
+COPY devdb.sql /app/devdb.sql
+COPY alembic.ini /app/alembic.ini
+
+RUN chmod +x /app/MyAppRest/tests/wait-for-it.sh
+
+#ENV FLASK_APP MyAppRest.autoapp
+RUN pip install uwsgi
+
+EXPOSE 5000
+ENTRYPOINT ./MyAppRest/tests/wait-for-it.sh postgrestest:5432 -- ./MyAppRest/tests/wait-for-it.sh redistest:6379 -- python -m unittest -f MyAppRest.tests

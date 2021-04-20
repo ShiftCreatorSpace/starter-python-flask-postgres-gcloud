@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  postgrestest:
+    image: postgres:12
+    environment:
+      POSTGRES_USER: "serviceclient"
+      POSTGRES_PASSWORD: "test_pg_db"
+      POSTGRES_DB: "myappdb"
+    logging:
+      driver: none
+  redistest:
+    image: redis:5-buster
+    logging:
+      driver: none
+  tests:
+    build:
+      context: .
+      dockerfile: MyAppRest/Dockerfile.test
+    depends_on:
+      - postgrestest
+      - redistest
+    environment:
+      REDIS_HOST: "redistest"
+      POSTGRES_HOST: "postgrestest"
+      POSTGRES_PORT: 5432
+      POSTGRES_PASSWORD: "test_pg_db"
+      TEST_USE_HOST: "1"
+    working_dir: /app

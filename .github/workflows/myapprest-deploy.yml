@@ -1,0 +1,31 @@
+name: Build and Deploy MyAppRest to GCP
+
+on:
+  release:
+    types: [created]
+
+env:
+  GITHUB_REF: ${{ github.ref }}
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, Deploy
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Setup gcloud CLI
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        version: '290.0.1'
+        service_account_key: ${{ secrets.GCP_KEY }}
+
+    - uses: ikuanyshbekov/app-yaml-env-compiler@v1.0
+      env:
+        DEPLOY_VERSION: ${{ github.ref }}
+        GCP_PROJECT_ID: "104694144558"
+
+    - run: |
+        gcloud app deploy app.yaml --project=MyApp --promote --quiet

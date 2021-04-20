@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:12
+    volumes:
+      - ./.postgres/data:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      POSTGRES_DB: ${POSTGRES_DB}
+  redis:
+    image: redis:5-buster
+    ports:
+      - 6379:6379
+  rest:
+    build:
+      context: .
+      dockerfile: MyAppRest/Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+    ports:
+      - 5000:5000
+    volumes:
+      - ./MyAppRest/:/app/MyAppRest/
+      - ./common/:/app/common/
+
